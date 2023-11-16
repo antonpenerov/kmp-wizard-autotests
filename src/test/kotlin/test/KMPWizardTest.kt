@@ -1,18 +1,15 @@
 package test
 
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.openqa.selenium.By
-import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
 import page.Form
 import java.time.Duration
 
-class OpenWizard {
+class KMPWizardTest {
     private lateinit var driver: WebDriver
     private lateinit var form: Form
 
@@ -38,44 +35,55 @@ class OpenWizard {
         form.desktopField.checkIsDisabled()
 
         form.serverField.checkIsDisabled()
+
+        form.downloadButton.checkIsEnabled()
     }
 
     @Test
-    @DisplayName("Checking helpers of the Project Name field with invalid characters")
+    @DisplayName("Checking helpers of the Project Name field")
     fun projectNameHelpersTest() {
-        val projectName = driver.findElement(By.id("projectName"))
+        form.projectNameField.clearValue()
+        form.projectNameField.checkHelper("Project name must not be empty")
 
-        //projectName.click()
-
-        val jsDriver: JavascriptExecutor = (driver as JavascriptExecutor?)!!
-        jsDriver.executeScript("document.getElementById('projectName').setAttribute('value', 'TEST')")
-
-        projectName.sendKeys(".")
-        assertEquals("Project name is not valid", driver.findElement(By.id("projectName-helper-text")).text)
-
-        projectName.sendKeys(",")
-        assertEquals("Project name is not valid", driver.findElement(By.id("projectName-helper-text")).text)
-
+        form.projectNameField.setValue(".")
+        form.projectNameField.checkHelper("Project name is not valid")
     }
 
     @Test
-    @DisplayName("Checking helpers of the Project ID field with invalid characters")
+    @DisplayName("Checking helpers of the Project ID field")
     fun projectIDHelpersTest() {
+        form.projectIdField.clearValue()
+        form.projectIdField.checkHelper("Project ID must not be empty")
 
+        form.projectIdField.setValue(".")
+        form.projectIdField.checkHelper("Project ID is not valid")
+
+        form.projectIdField.setValue("test")
+        form.projectIdField.checkHelper("Project ID must contain at least one '.' separator")
     }
 
     @Test
     @DisplayName("Checking fields' labels")
-    fun checkFieldsLabels() {
-        val projectNameLabel = driver.findElement(By.id("projectName-label"))
-        val projectNameLabelValue = projectNameLabel.text
-        assertEquals("Project Name", projectNameLabelValue)
+    fun fieldsLabelsTest() {
+        form.projectNameField.checkLabel("Project Name")
+
+        form.projectIdField.checkLabel("Project ID")
     }
 
     @Test
     @DisplayName("Checking required fields")
     fun requiredFieldsTest() {
+        form.projectNameField.clearValue()
+        form.downloadButton.checkIsDisabled()
 
+        form.projectNameField.setValue("Test")
+        form.projectIdField.clearValue()
+        form.downloadButton.checkIsDisabled()
+
+        form.projectIdField.setValue("test.test")
+        form.androidField.disableField()
+        form.iosField.disableField()
+        form.downloadButton.checkIsDisabled()
     }
 
     @AfterEach
